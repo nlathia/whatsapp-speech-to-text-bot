@@ -5,8 +5,10 @@ FROM python:3.9.15-slim
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg git
+# Install ffmpeg and git (so that the whisper library can be installed/used)
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    git
 
 # Copy local code to the container image.
 ENV APP_HOME /app
