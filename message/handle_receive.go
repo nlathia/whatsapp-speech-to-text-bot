@@ -65,5 +65,5 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 
 	// @TODO investigate formatting results by segment
 	// instead of just dumping it out
-	fmt.Fprintf(w, "**Transcription Result**\n\n%s", transcription.Text)
+	fmt.Fprintf(w, "💬 *Transcription Result*\n\n%s", transcription.Text)
 }
