@@ -1,4 +1,4 @@
-package message
+package transcribe
 
 import (
 	"bytes"
