@@ -14,4 +14,5 @@ def predict(model, input: str) -> dict:
     logger.info(f"Starting transcription: {input}")
     result = model.transcribe(input)
     logger.info(f"Finished transcription: {input}")
+    logger.info(f"Result: {result}")
     return result

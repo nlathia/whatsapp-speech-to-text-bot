@@ -36,6 +36,7 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// @TODO Check for other audio types (audio/mp3?)
+	// image/jpeg
 	if message.MediaContentType0 != "audio/ogg" {
 		// @TODO write a better response, e.g.
 		// reply saying that the file isn't audio
