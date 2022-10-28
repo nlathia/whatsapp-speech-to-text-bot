@@ -1,6 +1,10 @@
 package message
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/twilio/twilio-go"
+)
 
 type TwilioMessage struct {
 	AccountSid        string
@@ -20,6 +24,18 @@ type TwilioMessage struct {
 	SmsStatus         string
 	To                string
 	WaId              string
+}
+
+var secrets struct {
+	TwilioAccountSid string
+	TwilioAuthToken  string
+}
+
+func getTwilioClient() *twilio.RestClient {
+	return twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username: secrets.TwilioAccountSid,
+		Password: secrets.TwilioAuthToken,
+	})
 }
 
 // parseBool converts a string to a bool, if the key to that

@@ -1,14 +1,28 @@
 package message
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"encore.dev/beta/errs"
+	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
+
+type TranscribeEvent struct {
+	MediaUrl string
+	From     string
+	To       string
+}
+
+var TranscriptionRequests = pubsub.NewTopic[*TranscribeEvent]("transcriptions", pubsub.TopicConfig{
+	DeliveryGuarantee: pubsub.AtLeastOnce,
+})
+
+func writeError(w http.ResponseWriter, err error) {
+	rlog.Error("failed", "err", err)
+	errs.HTTPError(w, err)
+}
 
 // ReceiveMessage is the webhook endpoint that Twilio will
 // call whenever a WhatsApp message is received
@@ -17,54 +31,44 @@ import (
 func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
-		rlog.Error("failed to parse form: %v", err)
-		errs.HTTPError(w, err)
+		writeError(w, err)
 		return
 	}
 
 	message, err := formToMessage(req.Form)
 	if err != nil {
-		rlog.Error("failed to decode form: %v", err)
-		errs.HTTPError(w, err)
+		writeError(w, err)
 		return
 	}
 
-	// @TODO investigate: message may have more than 1 content
-	// type; currently dealing only with Type0
-	if message.NumMedia > 1 {
-		rlog.Info("received multiple media", "count", message.NumMedia)
-	}
+	rlog.Info("received message",
+		"num_media", message.NumMedia,
+		"from", message.From,
+		"content_type", message.MediaContentType0,
+	)
+	// if message.NumMedia > 1 {
+	// 	// @TODO investigate: message may have more than 1 content
+	// 	// type; currently dealing only with Type0
+	// }
 
-	// @TODO Check for other audio types (audio/mp3?)
-	// image/jpeg
-	if message.MediaContentType0 != "audio/ogg" {
-		// @TODO write a better response, e.g.
-		// reply saying that the file isn't audio
-		rlog.Info("received non-audio format", "format", message.MediaContentType0)
-		msg := fmt.Sprintf(
-			"🤖 Hello, %v! Forward your audio messages to me, and I'll text you back a transcription!",
-			message.ProfileName,
-		)
-		fmt.Fprint(w, msg)
+	if message.MediaContentType0 == "audio/ogg" {
+		event := &TranscribeEvent{
+			MediaUrl: message.MediaUrl0,
+			From:     message.From,
+			To:       message.To,
+		}
+		if _, err := TranscriptionRequests.Publish(req.Context(), event); err != nil {
+			writeError(w, err)
+			return
+		}
+
+		fmt.Fprint(w, "🤖 Audio file received. I'll reply with the transcription when it's ready.")
 		return
 	}
 
-	// @TODO this can be a very long-running call (for
-	// large audio files). Move to running this async
-	ctx, cancel := context.WithTimeout(req.Context(), time.Second*60*2)
-	defer func() {
-		fmt.Print(w, "Timed-out while waiting for transcription")
-		cancel()
-	}()
-
-	transcription, err := transcribe(ctx, message.MediaUrl0)
-	if err != nil {
-		rlog.Error("failed to transcribe")
-		errs.HTTPError(w, err)
-		return
-	}
-
-	// @TODO investigate formatting results by segment
-	// instead of just dumping it out
-	fmt.Fprintf(w, "💬 *Transcription Result*\n\n%s", transcription.Text)
+	msg := fmt.Sprintf(
+		"🤖 Hello, %v! Forward your audio messages to me, and I'll text you back a transcription.",
+		message.ProfileName,
+	)
+	fmt.Fprint(w, msg)
 }
