@@ -41,18 +41,22 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log := rlog.With("num_media", message.NumMedia, "from", message.From)
-	if message.NumMedia > 1 {
-		log.Info("received multiple media")
-		// @TODO investigate: message may have more than 1 content
-		// type; currently dealing only with Type0
-	}
+	rlog.Info("received message",
+		"num_media", message.NumMedia,
+		"from", message.From,
+		"content_type", message.MediaContentType0,
+	)
+	// if message.NumMedia > 1 {
+	// 	// @TODO investigate: message may have more than 1 content
+	// 	// type; currently dealing only with Type0
+	// }
 
 	if message.MediaContentType0 == "audio/ogg" {
 		event := &TranscribeEvent{
 			MediaUrl: message.MediaUrl0,
+			From:     message.From,
+			To:       message.To,
 		}
-
 		if _, err := TranscriptionRequests.Publish(req.Context(), event); err != nil {
 			writeError(w, err)
 			return
@@ -62,19 +66,9 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Info("received non-audio format", "format", message.MediaContentType0)
 	msg := fmt.Sprintf(
 		"🤖 Hello, %v! Forward your audio messages to me, and I'll text you back a transcription.",
 		message.ProfileName,
 	)
 	fmt.Fprint(w, msg)
-
-	// if transcription.Text == "" {
-	// 	fmt.Fprint(w, "😳 I couldn't detect any speech in that audio.")
-	// 	return
-	// }
-
-	// // @TODO investigate formatting results by segment
-	// // instead of just dumping it out
-	// fmt.Fprintf(w, "💬 *Transcription Result*\n\n%s", transcription.Text)
 }

@@ -14,7 +14,7 @@ type MessageParams struct {
 	To   string
 }
 
-//encore:api public method=POST path=/message/send
+//encore:api private method=POST path=/message/send
 func SendMessage(ctx context.Context, p *MessageParams) error {
 	client := getTwilioClient()
 
@@ -28,8 +28,10 @@ func SendMessage(ctx context.Context, p *MessageParams) error {
 		rlog.Error("error sending message", "err", err)
 		return err
 	} else {
-		response, _ := json.Marshal(*resp)
-		rlog.Info("message sent", "response", string(response))
+		_, err = json.Marshal(*resp)
+		if err != nil {
+			rlog.Debug("failed to marshal result")
+		}
 	}
 	return nil
 }
