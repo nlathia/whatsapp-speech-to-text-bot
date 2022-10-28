@@ -59,8 +59,13 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 
 	transcription, err := transcribe(ctx, message.MediaUrl0)
 	if err != nil {
-		rlog.Error("failed to transcribe")
-		errs.HTTPError(w, err)
+		// rlog.Error("failed to transcribe")
+		// errs.HTTPError(w, err)
+		fmt.Fprintf(w, "🚨 Failed to transcribe: %v", err)
+		return
+	}
+	if transcription.Text == "" {
+		fmt.Fprint(w, "😳 I couldn't detect any speech in that audio.")
 		return
 	}
 
