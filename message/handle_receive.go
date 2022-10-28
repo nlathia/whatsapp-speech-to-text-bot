@@ -8,68 +8,9 @@ import (
 	"encore.dev/rlog"
 )
 
-type Message struct {
-	AccountSid        string
-	ApiVersion        string
-	Body              string
-	Forwarded         bool
-	From              string
-	MediaContentType0 string
-	MediaUrl0         string
-	MessageSid        string
-	NumMedia          int
-	NumSegments       int
-	ProfileName       string
-	ReferralNumMedia  int
-	SmsMessageSid     string
-	SmsSid            string
-	SmsStatus         string
-	To                string
-	WaId              string
-}
-
-func formToMessage(form map[string][]string) (*Message, error) {
-	values := firstValues(form)
-
-	numMedia, err := parseInt("NumMedia", values)
-	if err != nil {
-		return nil, err
-	}
-	numSegments, err := parseInt("NumSegments", values)
-	if err != nil {
-		return nil, err
-	}
-	referralNumMedia, err := parseInt("ReferralNumMedia", values)
-	if err != nil {
-		return nil, err
-	}
-
-	fwdStatus, err := parseBool("Forwarded", values)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Message{
-		AccountSid:        values["AccountSid"],
-		ApiVersion:        values["ApiVersion"],
-		Body:              values["Body"],
-		Forwarded:         fwdStatus,
-		From:              values["From"],
-		MediaContentType0: values["MediaContentType0"],
-		MediaUrl0:         values["MediaUrl0"],
-		MessageSid:        values["MessageSid"],
-		NumMedia:          numMedia,
-		NumSegments:       numSegments,
-		ProfileName:       values["ProfileName"],
-		ReferralNumMedia:  referralNumMedia,
-		SmsMessageSid:     values["SmsMessageSid"],
-		SmsSid:            values["SmsSid"],
-		SmsStatus:         values["SmsStatus"],
-		To:                values["To"],
-		WaId:              values["WaId"],
-	}, nil
-}
-
+// ReceiveMessage is the webhook endpoint that Twilio will
+// call whenever a WhatsApp message is received
+//
 // encore:api public raw path=/message/receive
 func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
@@ -86,14 +27,30 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Message may have more than 1 content type?
+	// @TODO investigate: message may have more than 1 content
+	// type; currently dealing only with Type0
+	if message.NumMedia > 1 {
+		rlog.Info("received multiple media", "count", message.NumMedia)
+	}
 
-	if message.MediaContentType0 == "audio/ogg" {
-		fmt.Fprintf(w, "Hello audio!")
-		// Call whisper service
+	// @TODO Check for other audio types (audio/mp3?)
+	if message.MediaContentType0 != "audio/ogg" {
+		// @TODO write a better response, e.g.
+		// reply saying that the file isn't audio
+		fmt.Fprintf(w, "Hello, %v! ", message.ProfileName)
 		return
 	}
 
-	// Reply saying that the file isn't audio
-	// fmt.Fprintf(w, "Hello, %v! ", message.ProfileName)
+	// @TODO this can be a very long-running call (for
+	// large audio files). Move to running this async
+	transcription, err := transcribe(req.Context(), message.MediaUrl0)
+	if err != nil {
+		rlog.Error("failed to transcribe")
+		errs.HTTPError(w, err)
+		return
+	}
+
+	// @TODO investigate formatting results by segment
+	// instead of just dumping it out
+	fmt.Fprintf(w, "**Transcription Result**\n\n%s", transcription.Text)
 }
