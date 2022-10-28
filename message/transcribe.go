@@ -30,9 +30,9 @@ type TranscriptionResponse struct {
 // Cloud Run function for the current environment
 func transcriptionServiceUrl() string {
 	if encore.Meta().Environment.Type == encore.EnvProduction {
-		return "hemlock-backend-file-storage-prod"
+		return "https://openai-transcribe-dv5eoq6nda-nw.a.run.app"
 	} else {
-		return "hemlock-backend-file-storage-staging"
+		return "https://openai-transcribe-hbssw3ph2q-nw.a.run.app"
 	}
 }
 
