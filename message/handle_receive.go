@@ -29,10 +29,12 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	log := rlog.With("num_media", message.NumMedia)
+
 	// @TODO investigate: message may have more than 1 content
 	// type; currently dealing only with Type0
 	if message.NumMedia > 1 {
-		rlog.Info("received multiple media", "count", message.NumMedia)
+		log.Info("received multiple media")
 	}
 
 	// @TODO Check for other audio types (audio/mp3?)
@@ -40,7 +42,7 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	if message.MediaContentType0 != "audio/ogg" {
 		// @TODO write a better response, e.g.
 		// reply saying that the file isn't audio
-		rlog.Info("received non-audio format", "format", message.MediaContentType0)
+		log.Info("received non-audio format", "format", message.MediaContentType0)
 		msg := fmt.Sprintf(
 			"🤖 Hello, %v! Forward your audio messages to me, and I'll text you back a transcription!",
 			message.ProfileName,

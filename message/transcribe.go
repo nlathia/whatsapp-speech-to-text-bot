@@ -52,6 +52,7 @@ func buildRequest(ctx context.Context, mediaUrl string) (*http.Request, error) {
 	}
 
 	url := transcriptionServiceUrl()
+	rlog.Info("building request", "media", mediaUrl, "service", url)
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(request))
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func transcribe(ctx context.Context, mediaUri string) (*TranscriptionResponse, e
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error("transcribe failed to Do() request")
+		log.Error("transcribe failed", "err", err)
 		return nil, err
 	}
 	if resp.StatusCode != 200 {
