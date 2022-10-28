@@ -29,11 +29,12 @@ type TranscriptionResponse struct {
 // transcriptionServiceUrl returns the URL to the
 // Cloud Run function for the current environment
 func transcriptionServiceUrl() string {
+	projectID := "hbssw3ph2q"
 	if encore.Meta().Environment.Type == encore.EnvProduction {
-		return "https://openai-transcribe-dv5eoq6nda-nw.a.run.app"
-	} else {
-		return "https://openai-transcribe-hbssw3ph2q-nw.a.run.app"
+		projectID = "dv5eoq6nda"
+
 	}
+	return fmt.Sprintf("https://openai-transcribe-%v-nw.a.run.app", projectID)
 }
 
 // buildRequest returns an http.Request to call the
@@ -70,7 +71,6 @@ func transcribe(ctx context.Context, mediaUri string) (*TranscriptionResponse, e
 		return nil, err
 	}
 
-	// ctx = context.WithTimeout() // @TODO investigate
 	client := &http.Client{
 		Timeout: time.Second * 60 * 2, // @TODO investigate
 	}

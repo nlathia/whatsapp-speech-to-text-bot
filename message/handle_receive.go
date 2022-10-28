@@ -1,8 +1,10 @@
 package message
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -47,7 +49,13 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 
 	// @TODO this can be a very long-running call (for
 	// large audio files). Move to running this async
-	transcription, err := transcribe(req.Context(), message.MediaUrl0)
+	ctx, cancel := context.WithTimeout(req.Context(), time.Second*60*2)
+	defer func() {
+		fmt.Print(w, "Timed-out while waiting for transcription")
+		cancel()
+	}()
+
+	transcription, err := transcribe(ctx, message.MediaUrl0)
 	if err != nil {
 		rlog.Error("failed to transcribe")
 		errs.HTTPError(w, err)
