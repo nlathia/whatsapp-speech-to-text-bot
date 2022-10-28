@@ -39,10 +39,11 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	if message.MediaContentType0 != "audio/ogg" {
 		// @TODO write a better response, e.g.
 		// reply saying that the file isn't audio
-		msg := fmt.Sprintf(`🤖 Hello, %v!
-		
-		\n\nForward your audio messages to me,
-		and I'll text you back a transcription!`, message.ProfileName)
+		rlog.Info("received non-audio format", "format", message.MediaContentType0)
+		msg := fmt.Sprintf(
+			"🤖 Hello, %v! Forward your audio messages to me, and I'll text you back a transcription!",
+			message.ProfileName,
+		)
 		fmt.Fprint(w, msg)
 		return
 	}
