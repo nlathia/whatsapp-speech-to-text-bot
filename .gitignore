@@ -3,4 +3,5 @@ encore.gen.go
 encore.gen.cue
 
 .python-version
+__pycache__
 
