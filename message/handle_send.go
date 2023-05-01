@@ -23,6 +23,12 @@ func SendMessage(ctx context.Context, p *MessageParams) error {
 	params.SetFrom(p.From)
 	params.SetBody(p.Body)
 
+	/*
+		To receive real-time status updates for outbound messages, you can choose to set a
+		Status Callback URL. Twilio sends a request to this URL each time your message status
+		changes to one of the following: queued, failed, sent, delivered, read.
+	*/
+
 	resp, err := client.Api.CreateMessage(params)
 	if err != nil {
 		rlog.Error("error sending message", "err", err)

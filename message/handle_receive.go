@@ -10,6 +10,7 @@ import (
 )
 
 type TranscribeEvent struct {
+	WaID     string
 	MediaUrl string
 	From     string
 	To       string
@@ -53,6 +54,7 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 
 	if message.MediaContentType0 == "audio/ogg" {
 		event := &TranscribeEvent{
+			WaID:     message.WaId,
 			MediaUrl: message.MediaUrl0,
 			From:     message.From,
 			To:       message.To,
@@ -60,6 +62,10 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		if _, err := TranscriptionRequests.Publish(req.Context(), event); err != nil {
 			writeError(w, err)
 			return
+		}
+		if err := store(req.Context(), event); err != nil {
+			rlog.Error("failed to store event", "err", err)
+			// Swallow for now - the transcription event has been sent
 		}
 
 		fmt.Fprint(w, "🤖 Audio file received. I'll reply with the transcription when it's ready.")

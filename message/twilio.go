@@ -85,7 +85,6 @@ func firstValues(form map[string][]string) map[string]string {
 // parsing the fields in the webhook's form values
 func formToMessage(form map[string][]string) (*TwilioMessage, error) {
 	values := firstValues(form)
-
 	numMedia, err := parseInt("NumMedia", values)
 	if err != nil {
 		return nil, err
