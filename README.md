@@ -1,6 +1,6 @@
 # whatsapp-speech-to-text-bot
 
-This [encore.dev](https://encore.dev/) app can receive Twilio webhook events and transcribe audio messages using Open AI's [Whisper](https://github.com/openai/whisper) that is deployed separately as a separate [Cloud Run](https://cloud.google.com/run) app.
+This [encore.dev](https://encore.dev/) app can receive Twilio webhook events and transcribe audio messages using Open AI's [Whisper](https://github.com/openai/whisper) model, which is deployed separately as a separate [Cloud Run](https://cloud.google.com/run) app.
 
 ## Setup
 
