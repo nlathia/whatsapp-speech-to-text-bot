@@ -43,7 +43,6 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 		MediaUrl:          req.Form["MediaUrl0"][0],
 		ProfileName:       req.Form["ProfileName"][0],
 	}
-
 	rlog.Info("received message", "type", message.MediaContentType0)
 	if message.MediaContentType0 == "audio/ogg" {
 		if message.MediaUrl == "" {
@@ -53,7 +52,6 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 			errs.HTTPError(w, err)
 			return
 		}
-
 		fmt.Fprint(w, audioReceived)
 		return
 	}

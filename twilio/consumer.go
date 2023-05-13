@@ -38,7 +38,6 @@ func handleTranscribe(ctx context.Context, event *TwilioMessage) error {
 		rlog.Error("transcription failed", "err", err)
 		return err
 	}
-
 	return SendMessage(ctx, &MessageParams{
 		To:   event.From,
 		From: event.To,
