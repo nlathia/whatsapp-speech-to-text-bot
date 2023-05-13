@@ -43,7 +43,7 @@ class TranscriptionResponse:
 @app.route('/', methods=['POST'])
 def main():
     req = TranscriptionRequest.from_dict(request.get_json())
-    result = predict(model=model, input=req.media_uri)
+    result = predict(model=model, uri=req.media_uri)
 
     resp = TranscriptionResponse.from_dict(result)
     return jsonify(resp.to_dict())

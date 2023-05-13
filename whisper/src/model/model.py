@@ -10,9 +10,9 @@ def load_model(model_type: str = "base") -> whisper.Whisper:
     return model
 
 
-def predict(model, input: str) -> dict:
-    logger.info(f"Starting transcription: {input}")
-    result = model.transcribe(input)
-    logger.info(f"Finished transcription: {input}")
+def predict(model, uri: str) -> dict:
+    logger.info(f"Starting transcription: {uri}")
+    result = model.transcribe(uri)
+    logger.info(f"Finished transcription: {uri}")
     logger.info(f"Result: {result}")
     return result
