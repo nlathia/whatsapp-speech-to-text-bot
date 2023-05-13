@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"encore.dev"
 	"encore.dev/rlog"
 )
 
@@ -20,8 +19,7 @@ const (
 )
 
 var secrets struct {
-	ProductionID string
-	StagingID    string
+	CloudRunID string
 }
 
 // WhisperRequest replicates the
@@ -37,17 +35,10 @@ type WhisperResponse struct {
 	Language string `json:"language"`
 }
 
-func projectID() string {
-	if encore.Meta().Environment.Type == encore.EnvProduction {
-		return secrets.ProductionID
-	}
-	return secrets.StagingID
-}
-
 // buildRequest returns an http.Request to call the
 // Python Cloud Run service
 func (w *WhisperRequest) buildRequest(ctx context.Context) (*http.Request, error) {
-	url := fmt.Sprintf(cloudRunURL, projectID())
+	url := fmt.Sprintf(cloudRunURL, secrets.CloudRunID)
 	request, err := json.Marshal(&WhisperRequest{
 		MediaUrl: w.MediaUrl,
 	})
