@@ -37,3 +37,7 @@ Set your twilio webhook to: `https://<your-forwarding-address>.eu.ngrok.io/messa
 
 By visiting the Sandbox settings in your account:
 https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
+
+## Limitations
+
+This setup currently deploys the Cloud Run (Whisper) app with [public, unauthenticated access](https://cloud.google.com/run/docs/authenticating/public).
