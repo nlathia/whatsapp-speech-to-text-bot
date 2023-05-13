@@ -1,3 +1,3 @@
-# openai-transcribe
+# whisper
 
-This cloud run container was created with the [kettle-cli](https://github.com/nlathia/kettle-cli).
+This cloud run container was created and deployed with the [kettle-cli](https://github.com/nlathia/kettle-cli).
