@@ -6,7 +6,6 @@ import (
 
 	"encore.dev/beta/errs"
 	"encore.dev/pubsub"
-	"encore.dev/rlog"
 )
 
 const (
@@ -38,12 +37,12 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	message := &TwilioMessage{
-		From:              req.Form["From"][0],
-		MediaContentType0: req.Form["MediaContentType0"][0],
-		MediaUrl:          req.Form["MediaUrl0"][0],
-		ProfileName:       req.Form["ProfileName"][0],
+		From:              getFirst(req.Form, "From"),
+		MediaContentType0: getFirst(req.Form, "MediaContentType0"),
+		MediaUrl:          getFirst(req.Form, "MediaUrl0"),
+		ProfileName:       getFirst(req.Form, "ProfileName"),
+		To:                getFirst(req.Form, "To"),
 	}
-	rlog.Info("received message", "type", message.MediaContentType0)
 	if message.MediaContentType0 == "audio/ogg" {
 		if message.MediaUrl == "" {
 			return
@@ -58,4 +57,15 @@ func ReceiveMessage(w http.ResponseWriter, req *http.Request) {
 
 	msg := fmt.Sprintf(textReceived, message.ProfileName)
 	fmt.Fprint(w, msg)
+}
+
+func getFirst(form map[string][]string, key string) string {
+	values, exists := form[key]
+	if !exists {
+		return ""
+	}
+	if len(values) == 0 {
+		return ""
+	}
+	return values[0]
 }

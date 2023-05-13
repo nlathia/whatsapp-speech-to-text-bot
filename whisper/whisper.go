@@ -9,13 +9,15 @@ import (
 	"net/http"
 	"time"
 
+	"encore.dev"
 	"encore.dev/rlog"
 )
 
 const (
 	// cloudRunURL is the Cloud Run service that is running Python
 	// (implemented in this directory)
-	cloudRunURL = "https://openai-transcribe-%v-nw.a.run.app"
+	cloudRunURL   = "https://openai-transcribe-%v-nw.a.run.app"
+	cloudRunLocal = "http://localhost:9090/"
 )
 
 var secrets struct {
@@ -35,10 +37,24 @@ type WhisperResponse struct {
 	Language string `json:"language"`
 }
 
+func isLocal() bool {
+	if encore.Meta().Environment.Type == encore.EnvDevelopment {
+		return encore.Meta().Environment.Cloud == encore.CloudLocal
+	}
+	return false
+}
+
+func getURL() string {
+	if isLocal() {
+		return cloudRunLocal
+	}
+	return fmt.Sprintf(cloudRunURL, secrets.CloudRunID)
+}
+
 // buildRequest returns an http.Request to call the
 // Python Cloud Run service
 func (w *WhisperRequest) buildRequest(ctx context.Context) (*http.Request, error) {
-	url := fmt.Sprintf(cloudRunURL, secrets.CloudRunID)
+	url := getURL()
 	request, err := json.Marshal(&WhisperRequest{
 		MediaUrl: w.MediaUrl,
 	})
